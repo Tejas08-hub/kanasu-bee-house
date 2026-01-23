@@ -1,42 +1,30 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-dotenv.config();
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-const port = process.env.PORT || 3000;
-
-// Initialize Gemini API
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+// Replace your existing model line with this:
+const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash", // Switch back to flash but with the fix below
+});
 
 app.post('/chat', async(req, res) => {
     try {
         const { message } = req.body;
+        if (!message) return res.status(400).json({ error: "No message" });
 
-        if (!message || message.length > 1000) {
-            return res.status(400).json({ error: "Message is required." });
-        }
+        // We use the 'contents' array format which is more stable on Render
+        const result = await model.generateContent({
+            contents: [{ role: "user", parts: [{ text: message }] }],
+            generationConfig: {
+                maxOutputTokens: 500,
+            },
+        });
 
-        // We combine the system instruction with the user message 
-        // to ensure the AI knows its role without causing a 404.
-        const prompt = `Role: You are the Kanasu Bee House assistant. You help beekeepers. Keep answers brief and professional.\n\nUser Question: ${message}`;
-
-        const result = await model.generateContent(prompt);
         const response = await result.response;
         res.json({ reply: response.text() });
 
     } catch (error) {
         console.error("Gemini API Error:", error.message);
-        res.status(500).json({ reply: "The hive is a bit smoky. Please try again later." });
+        // If it's still a 404, we catch it here to give a better hint
+        if (error.message.includes("404")) {
+            return res.status(500).json({ reply: "The AI is updating. Please try again in 5 minutes." });
+        }
+        res.status(500).json({ reply: "The hive is a bit smoky right now." });
     }
-});
-
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
 });
