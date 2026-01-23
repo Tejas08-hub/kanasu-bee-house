@@ -4,15 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kanasu Bee Assistant</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <title>Kanasu Bee House AI</title>
     <style>
-         :root {
-            --primary-color: #f39c12;
-            --bg-color: #f4f7f6;
-            --chat-bg: #ffffff;
-        }
-        
         * {
             box-sizing: border-box;
             margin: 0;
@@ -20,97 +13,89 @@
         }
         
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f9f9f9;
             height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            /* Prevents double scrolling on mobile */
         }
-        /* Header */
+        /* Responsive Header */
         
         .header {
-            background: var(--primary-color);
-            color: white;
+            background-color: #ffcc00;
+            /* Honey Bee Yellow */
             padding: 15px;
             text-align: center;
-            font-weight: 600;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        /* Chat Container */
+        /* Main Chat Area */
         
-        #chat-container {
+        #chat-window {
             flex: 1;
             overflow-y: auto;
             padding: 15px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
         
-        .message {
-            max-width: 85%;
-            padding: 12px 16px;
-            border-radius: 15px;
-            font-size: 15px;
+        .msg {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            font-size: 16px;
             line-height: 1.4;
-            word-wrap: break-word;
         }
         
-        .user {
+        .user-msg {
             align-self: flex-end;
-            background-color: var(--primary-color);
-            color: white;
+            background-color: #ffcc00;
+            color: #000;
             border-bottom-right-radius: 2px;
         }
         
-        .bot {
+        .bot-msg {
             align-self: flex-start;
-            background-color: #e1e1e1;
+            background-color: #eeeeee;
             color: #333;
             border-bottom-left-radius: 2px;
         }
-        /* Typing Indicator */
+        /* Input Bar for Mobile */
         
-        .typing {
-            font-style: italic;
-            opacity: 0.8;
-        }
-        /* Input Area */
-        
-        .input-area {
-            background: white;
+        .input-container {
             padding: 10px;
-            display: flex;
-            gap: 10px;
+            background: white;
             border-top: 1px solid #ddd;
+            display: flex;
+            gap: 8px;
             padding-bottom: env(safe-area-inset-bottom);
-            /* iOS support */
+            /* Fix for iPhone notches */
         }
         
-        input {
+        #user-input {
             flex: 1;
             padding: 12px;
-            border: 1px solid #ddd;
+            border: 1px solid #ccc;
             border-radius: 25px;
-            outline: none;
             font-size: 16px;
-            /* Prevents auto-zoom on iOS */
+            /* Prevents mobile zoom-in on focus */
+            outline: none;
         }
         
-        button {
-            background: var(--primary-color);
-            color: white;
+        #send-btn {
+            background-color: #ffcc00;
             border: none;
-            padding: 0 20px;
+            padding: 10px 20px;
             border-radius: 25px;
-            font-weight: 600;
+            font-weight: bold;
             cursor: pointer;
         }
         
-        button:active {
-            opacity: 0.8;
+        .typing {
+            font-style: italic;
+            color: #888;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -119,75 +104,79 @@
 
     <div class="header">Kanasu Bee Assistant</div>
 
-    <div id="chat-container">
-        <div class="message bot">Hello! How can I help with your bees today?</div>
+    <div id="chat-window">
+        <div class="msg bot-msg">Hello! Welcome to Kanasu Bee House. How can I help you today?</div>
     </div>
 
-    <div class="input-area">
-        <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off">
-        <button onclick="sendMessage()">Send</button>
+    <div class="input-container">
+        <input type="text" id="user-input" placeholder="Ask about your bees..." autocomplete="off">
+        <button id="send-btn">Send</button>
     </div>
 
     <script>
-        const chatContainer = document.getElementById("chat-container");
-        const userInput = document.getElementById("user-input");
+        const chatWindow = document.getElementById('chat-window');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
 
-        // Use your live Render URL with /chat
-        const API_URL = "https://kanasu-api.onrender.com/chat";
+        // This is your correct Render URL with the /chat path included
+        const SERVER_URL = "https://kanasu-api.onrender.com/chat";
 
-        async function sendMessage() {
-            const message = userInput.value.trim();
-            if (!message) return;
+        async function handleSend() {
+            const text = userInput.value.trim();
+            if (!text) return;
 
-            // 1. Add User Message
-            appendMessage("user", message);
-            userInput.value = "";
+            // 1. Show User Message
+            addMessage(text, 'user-msg');
+            userInput.value = '';
 
-            // 2. Add Typing Indicator
-            const botMsgId = appendMessage("bot", '<span class="typing">Typing...</span>');
+            // 2. Show Typing Indicator
+            const typingId = "typing-" + Date.now();
+            const typingDiv = document.createElement('div');
+            typingDiv.id = typingId;
+            typingDiv.className = 'msg bot-msg typing';
+            typingDiv.innerText = "Bee is thinking...";
+            chatWindow.appendChild(typingDiv);
+            scrollToBottom();
 
             try {
-                // 3. Call Render Server
-                const response = await fetch(API_URL, {
-                    method: "POST",
+                // 3. Request to Render Server
+                const response = await fetch(SERVER_URL, {
+                    method: 'POST',
                     headers: {
-                        "Content-Type": "application/json"
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        message: message
+                        message: text
                     })
                 });
 
                 const data = await response.json();
 
-                // 4. Update Bot Message with real AI response
-                const botBubble = document.getElementById(botMsgId);
-                botBubble.innerHTML = data.reply || "I'm having trouble thinking right now.";
-
-            } catch (error) {
-                console.error("Error:", error);
-                const botBubble = document.getElementById(botMsgId);
-                botBubble.innerHTML = "Error connecting to server. Please check Render status.";
+                // 4. Remove typing and show AI reply
+                document.getElementById(typingId).remove();
+                addMessage(data.reply || "I'm sorry, I couldn't process that.", 'bot-msg');
+            } catch (err) {
+                document.getElementById(typingId).remove();
+                addMessage("Error: Could not connect to the bee hive server.", 'bot-msg');
+                console.error(err);
             }
-
-            // Scroll to bottom
-            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        function appendMessage(sender, text) {
-            const id = "msg-" + Date.now();
-            const msgDiv = document.createElement("div");
-            msgDiv.className = `message ${sender}`;
-            msgDiv.id = id;
-            msgDiv.innerHTML = text;
-            chatContainer.appendChild(msgDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            return id;
+        function addMessage(text, className) {
+            const div = document.createElement('div');
+            div.className = `msg ${className}`;
+            div.innerText = text;
+            chatWindow.appendChild(div);
+            scrollToBottom();
         }
 
-        // Allow "Enter" key to send message
-        userInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") sendMessage();
+        function scrollToBottom() {
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        sendBtn.addEventListener('click', handleSend);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSend();
         });
     </script>
 </body>
