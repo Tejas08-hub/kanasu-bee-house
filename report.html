@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Hive Report</title>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="firebase.js"></script>
+
+    <style>
+        body {
+            font-family: Montserrat;
+            background: #fff9e6;
+            padding: 40px
+        }
+        
+        .box {
+            background: #fff;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 600px;
+            margin: auto
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="box">
+        <h2>Hive Report</h2>
+
+        <p><b>Hive Name:</b> <span id="hName">—</span></p>
+        <p><b>Date & Time:</b> <span id="rTime">—</span></p>
+
+        <hr>
+
+        <p>Temperature: <span id="rTemp">—</span></p>
+        <p>Humidity: <span id="rHum">—</span></p>
+        <p>Sound: <span id="rSound">—</span></p>
+        <p>Weight: <span id="rWeight">—</span></p>
+
+        <p id="msg" style="margin-top:20px;color:#777"></p>
+    </div>
+
+    <script>
+        const hive = new URLSearchParams(window.location.search).get("hive");
+
+        firebase.auth().onAuthStateChanged(u => {
+            if (!u || !hive) return;
+
+            firebase.database()
+                .ref("userDashboards/" + u.uid + "/" + hive)
+                .once("value")
+                .then(s => {
+                    hName.innerText = s.val().name
+                });
+
+            firebase.database()
+                .ref("hiveData/" + hive)
+                .limitToLast(1)
+                .once("value")
+                .then(s => {
+                    if (!s.exists()) {
+                        msg.innerText = "No sensor data available yet.";
+                        return;
+                    }
+                    s.forEach(c => {
+                        const d = c.val();
+                        rTemp.innerText = d.temperature + " °C";
+                        rHum.innerText = d.humidity + " %";
+                        rSound.innerText = d.sound + " dB";
+                        rWeight.innerText = d.weight + " kg";
+                        rTime.innerText = new Date(d.timestamp || Date.now()).toLocaleString();
+                    });
+                });
+        });
+    </script>
+
+</body>
+
+</html>

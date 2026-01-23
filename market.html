@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Insights</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+         :root {
+            --primary: #f4b400;
+            --bg: #fffcf0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        body {
+            background: var(--bg);
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding-top: 20px;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+        }
+        
+        .back {
+            text-decoration: none;
+            color: #444;
+            font-weight: 700;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+        
+        .price-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 0;
+            border-bottom: 1px solid #f8f8f8;
+        }
+        
+        .price-item:last-child {
+            border: none;
+        }
+        
+        .type {
+            font-weight: 600;
+            color: #555;
+            font-size: 15px;
+        }
+        
+        .amt {
+            font-weight: 800;
+            color: var(--primary);
+            font-size: 18px;
+        }
+        
+        .trend {
+            font-size: 12px;
+            color: #2e7d32;
+            margin-left: 5px;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, #f4b400, #ffca28);
+            color: white;
+            padding: 25px;
+            border-radius: 25px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="dashboard.html" class="back">⬅ Back</a>
+            <h2 style="font-size: 20px; font-weight: 800;">Market Trends</h2>
+        </div>
+
+        <div class="card">
+            <h4 style="color: #bbb; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Live Prices (India)</h4>
+            <div class="price-item">
+                <span class="type">Raw Wild Honey</span>
+                <span class="amt">₹450/kg <span class="trend">▲ 2%</span></span>
+            </div>
+            <div class="price-item">
+                <span class="type">Organic Farm Honey</span>
+                <span class="amt">₹720/kg <span class="trend">▲ 4%</span></span>
+            </div>
+            <div class="price-item">
+                <span class="type">Export Quality</span>
+                <span class="amt">₹1,100/kg <span class="trend">▲ 1%</span></span>
+            </div>
+        </div>
+
+        <div class="highlight-box">
+            <h3 style="margin-bottom: 10px;">💡 Pro Analysis</h3>
+            <p style="font-size: 14px; opacity: 0.95; line-height: 1.6;">The demand for Forest Honey is rising in urban centers. Recommendation: Ensure your moisture content is below 18% for premium pricing.</p>
+        </div>
+    </div>
+</body>
+
+</html>
