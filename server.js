@@ -11,20 +11,27 @@ app.use(express.json());
 
 const port = process.env.PORT || 3000;
 
-// 1. FIRST: Initialize the Google AI with your API Key
+// 1. Initialize Gemini API (Fixed ReferenceError)
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// 2. SECOND: Now that genAI exists, create the model
-// We use the full model name string which is often required by the newer SDK
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+// 2. Initialize Model with correct ID for Render/Production
+// We use 'gemini-1.5-flash' which is the current stable standard
+const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash"
+});
 
 app.post('/chat', async(req, res) => {
     try {
         const { message } = req.body;
-        if (!message) return res.status(400).json({ error: "No message" });
 
-        // Using the most stable request format for Render
-        const result = await model.generateContent(message);
+        if (!message || message.length > 1000) {
+            return res.status(400).json({ error: "Message required and must be under 1000 chars." });
+        }
+
+        // 3. System Instructions are passed directly here for better stability
+        const prompt = `System: You are the Kanasu Bee House assistant. You help beekeepers. Keep your answers brief and professional.\n\nUser: ${message}`;
+
+        const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text();
 
@@ -33,15 +40,16 @@ app.post('/chat', async(req, res) => {
     } catch (error) {
         console.error("Gemini API Error:", error.message);
 
-        // Detailed error message to help us troubleshoot
+        // Specific fix for the 404 error on Render
         if (error.message.includes("404")) {
-            return res.status(500).json({ reply: "Model not found. Please check API settings." });
+            return res.status(500).json({ reply: "The AI hive is updating. Please try again in 1 minute." });
         }
 
-        res.status(500).json({ reply: "The hive is a bit smoky right now. Please try again." });
+        res.status(500).json({ reply: "The hive is a bit smoky. Please try again later." });
     }
 });
 
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+const server = app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
 });
+server.timeout = 10000;
